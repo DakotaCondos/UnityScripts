@@ -124,12 +124,20 @@ public class TextMeshProFormatter
 
     /// <summary>
     /// Sets the opacity of the text.
+    /// WARNING: Following a SetOpacity call, text alpha is set to FF i.e. 1.0f 
     /// </summary>
     /// <param name="opacity">The opacity value to apply to the text (0.0 - 1.0).</param>
     /// <returns>The current instance of the formatter.</returns>
     public TextMeshProFormatter SetOpacity(float opacity)
     {
-        formattedText.Insert(0, $"<alpha=#{opacity:F2}>").Append("</alpha>");
+        // Convert the opacity value from float (0.0 - 1.0) to hexadecimal (00 - FF)
+        byte opacityByte = (byte)(opacity * 255);
+        string opacityHex = opacityByte.ToString("X2");
+
+        // Insert the <alpha> tag with the hexadecimal opacity value
+        // <alpha> tags do not have a closing tag
+        formattedText.Insert(0, $"<alpha=#{opacityHex}>").Append("<alpha=#FF>");
+
         return this;
     }
 
@@ -153,18 +161,6 @@ public class TextMeshProFormatter
         return this;
     }
 
-    /// <summary>
-    /// Applies a gradient effect to the text.
-    /// </summary>
-    /// <param name="color1">The starting color of the gradient.</param>
-    /// <param name="color2">The ending color of the gradient.</param>
-    /// <param name="angle">The angle of the gradient (default is 0).</param>
-    /// <returns>The current instance of the formatter.</returns>
-    public TextMeshProFormatter Gradient(string color1, string color2, float angle = 0)
-    {
-        formattedText.Insert(0, $"<gradient=#{color1},#{color2}>").Append("</gradient>");
-        return this;
-    }
 
     /// <summary>
     /// Rotates the text by a specified angle.
@@ -195,5 +191,24 @@ public class TextMeshProFormatter
     public override string ToString()
     {
         return formattedText.ToString();
+    }
+
+    /// <summary>
+    /// Clears the formatted text, removing any previously appended text or formatting.
+    /// </summary>
+    public void Clear()
+    {
+        formattedText.Clear();
+    }
+
+    /// <summary>
+    /// Gets the formatted text and clears the internal state, preparing for future formatting.
+    /// </summary>
+    /// <returns>The formatted text.</returns>
+    public string GetFormattedText()
+    {
+        string text = formattedText.ToString();
+        Clear();
+        return text;
     }
 }
